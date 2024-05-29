@@ -29,6 +29,7 @@ func TestPokemonByName(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
+
 			mockPokeAPIServer(
 				t,
 				tt.mockPokeAPIResponse,
@@ -253,6 +254,7 @@ const mockOKResp = `{
 func mockPokeAPIServer(t *testing.T, mockResp pokemonSpecies) {
 	t.Helper()
 
+	var apiCalled bool = false
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != pokeAPIPokemonSpeciesURL {
 			t.Errorf("Expected to request %s, got: %s", pokeAPIPokemonSpeciesURL, r.URL.Path)
@@ -262,7 +264,11 @@ func mockPokeAPIServer(t *testing.T, mockResp pokemonSpecies) {
 		if err != nil {
 			t.Errorf("Expect nil err, got %s", err)
 		}
+		apiCalled = true
 	}))
 	defer server.Close()
 
+	if !apiCalled {
+		t.Error("expect pokeAPI to be called, got no call.")
+	}
 }
