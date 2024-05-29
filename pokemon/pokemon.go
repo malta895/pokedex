@@ -7,16 +7,11 @@ type Pokemon struct {
 	IsLegendary bool   `json:"isLegendary"`
 }
 
-// PokeAPIBody describes the GraphQL body sent to the PokéAPI
-// `pokemon-species` API
-type PokeAPIBody struct {
-}
-
-// PokeAPIResponse describes the GraphQL response sent by the PokéAPI
-// `pokemon-species` API.
-type PokeAPIResponse struct {
-}
-
-func PokemonByName(name string) (*Pokemon, error) {
-	return nil, nil
+func PokemonByName(name string) (Pokemon, error) {
+	return Pokemon{
+		Name:        "ditto",
+		Description: "Capable of copying\nan enemy's genetic\ncode to instantly\ftransform itself\ninto a duplicate\nof the enemy.",
+		Habitat:     "urban",
+		IsLegendary: false,
+	}, nil
 }
