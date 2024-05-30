@@ -14,6 +14,7 @@ func TestPokemonByName(t *testing.T) {
 
 		expectedPokemon Pokemon
 		expectedError   error
+		expectApiCalled bool
 	}{
 		"should respond with correct fields when response is 200 OK": {
 			pokemonName: "ditto",
@@ -23,16 +24,20 @@ func TestPokemonByName(t *testing.T) {
 				Habitat:     "urban",
 				IsLegendary: false,
 			},
-			expectedError: nil,
+			expectedError:   nil,
+			expectApiCalled: true,
 		},
 	}
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-
+			var apiCalled bool
 			mockPokeAPIServer(
 				t,
 				tt.mockPokeAPIResponse,
+				func() {
+					apiCalled = true
+				},
 			)
 
 			foundResp, err := PokemonByName(tt.pokemonName)
@@ -50,6 +55,9 @@ func TestPokemonByName(t *testing.T) {
 					foundResp,
 					tt.expectedPokemon,
 				)
+			}
+			if tt.expectApiCalled != apiCalled {
+				t.Errorf("found apiCalled=%v; want %v", apiCalled, tt.expectApiCalled)
 			}
 		})
 	}
@@ -251,11 +259,11 @@ const mockOKResp = `{
   }
 `
 
-func mockPokeAPIServer(t *testing.T, mockResp pokemonSpecies) {
+func mockPokeAPIServer(t *testing.T, mockResp pokemonSpecies, assertCalled func()) {
 	t.Helper()
 
-	var apiCalled bool = false
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assertCalled()
 		if r.URL.Path != pokeAPIPokemonSpeciesURL {
 			t.Errorf("Expected to request %s, got: %s", pokeAPIPokemonSpeciesURL, r.URL.Path)
 		}
@@ -264,11 +272,6 @@ func mockPokeAPIServer(t *testing.T, mockResp pokemonSpecies) {
 		if err != nil {
 			t.Errorf("Expect nil err, got %s", err)
 		}
-		apiCalled = true
 	}))
 	defer server.Close()
-
-	if !apiCalled {
-		t.Error("expect pokeAPI to be called, got no call.")
-	}
 }
