@@ -1,6 +1,7 @@
 package pokemon
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 )
@@ -21,21 +22,36 @@ func NewClient(baseUrl string) PokemonClient {
 }
 
 func (p PokemonClient) PokemonByName(name string) (Pokemon, error) {
-	resp, err := http.Get(p.baseUrl + "/" + "ditto")
+	resp, err := http.Get(p.baseUrl + "/" + name)
 	if err != nil {
 		return Pokemon{}, err
 	}
 	defer resp.Body.Close()
 
-	_, err = io.ReadAll(resp.Body)
+	respBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return Pokemon{}, err
+	}
+
+	pokemonSpecies := pokemonSpecies{}
+	err = json.Unmarshal(respBytes, &pokemonSpecies)
 	if err != nil {
 		return Pokemon{}, err
 	}
 
 	return Pokemon{
-		Name:        "ditto",
-		Description: "Capable of copying\nan enemy's genetic\ncode to instantly\ftransform itself\ninto a duplicate\nof the enemy.",
-		Habitat:     "urban",
-		IsLegendary: false,
+		Name:        pokemonSpecies.Name,
+		Description: retrieveEnglishDescription(pokemonSpecies),
+		Habitat:     pokemonSpecies.Habitat.Name,
+		IsLegendary: pokemonSpecies.IsLegendary,
 	}, nil
+}
+
+func retrieveEnglishDescription(ps pokemonSpecies) string {
+	for _, flavorTextEntry := range ps.FlavorTextEntries {
+		if flavorTextEntry.Language.Name == "en" {
+			return flavorTextEntry.FlavorText
+		}
+	}
+	return ""
 }

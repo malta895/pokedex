@@ -21,7 +21,7 @@ type pokemonSpecies struct {
 type flavorText struct {
 	FlavorText string `json:"flavor_text"`
 	Language   struct {
-		Iso3166 string `json:"iso3166"`
+		Name string `json:"name"`
 	} `json:"language"`
 }
 
