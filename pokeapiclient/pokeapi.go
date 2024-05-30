@@ -1,4 +1,4 @@
-package pokemon
+package pokeapiclient
 
 // pokeAPIPokemonSpeciesURL is the complete URL of the pokemon-species pokeapi endpoint
 //

@@ -1,4 +1,4 @@
-package pokemon
+package pokeapiclient
 
 import (
 	"encoding/json"
