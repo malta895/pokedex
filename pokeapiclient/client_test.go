@@ -1,6 +1,7 @@
 package pokeapiclient
 
 import (
+	"malta895/pokedex/types"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -12,7 +13,7 @@ func TestPokemonByName(t *testing.T) {
 		pokemonName         string
 		mockPokeAPIResponse string
 
-		expectedPokemon Pokemon
+		expectedPokemon types.Pokemon
 		expectedError   error
 		expectApiCalled bool
 	}{
@@ -35,7 +36,7 @@ func TestPokemonByName(t *testing.T) {
 			  }
 			`,
 
-			expectedPokemon: Pokemon{
+			expectedPokemon: types.Pokemon{
 				Name:        "fakelegend",
 				Description: "This is a mock legendary pokemon",
 				Habitat:     "mockHabitat",
@@ -44,7 +45,7 @@ func TestPokemonByName(t *testing.T) {
 			expectedError:   nil,
 			expectApiCalled: true,
 		},
-		"should respond with the english description": {
+		"should respond with the first english description": {
 			pokemonName: "bigpokemon",
 			mockPokeAPIResponse: `{
 				"flavor_text_entries": [
@@ -59,6 +60,12 @@ func TestPokemonByName(t *testing.T) {
 					"language": {
 					  "name": "en"
 					}
+				  },
+				  {
+					"flavor_text": "This is the second english description of a mock big pokemon",
+					"language": {
+					  "name": "en"
+					}
 				  }
 				],
 				"habitat": {
@@ -69,7 +76,7 @@ func TestPokemonByName(t *testing.T) {
 			  }
 			`,
 
-			expectedPokemon: Pokemon{
+			expectedPokemon: types.Pokemon{
 				Name:        "bigpokemon",
 				Description: "This is a mock big pokemon",
 				Habitat:     "mockHabitat",
