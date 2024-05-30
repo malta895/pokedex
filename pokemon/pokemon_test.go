@@ -10,14 +10,15 @@ import (
 func TestPokemonByName(t *testing.T) {
 	tests := map[string]struct {
 		pokemonName         string
-		mockPokeAPIResponse pokemonSpecies
+		mockPokeAPIResponse string
 
 		expectedPokemon Pokemon
 		expectedError   error
 		expectApiCalled bool
 	}{
 		"should respond with correct fields when response is 200 OK": {
-			pokemonName: "ditto",
+			pokemonName:         "ditto",
+			mockPokeAPIResponse: mockOKResp,
 			expectedPokemon: Pokemon{
 				Name:        "ditto",
 				Description: "Capable of copying\nan enemy's genetic\ncode to instantly\ftransform itself\ninto a duplicate\nof the enemy.",
@@ -32,15 +33,18 @@ func TestPokemonByName(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			var apiCalled bool
-			mockPokeAPIServer(
+			server := mockPokeAPIServer(
 				t,
+				tt.pokemonName,
 				tt.mockPokeAPIResponse,
 				func() {
 					apiCalled = true
 				},
 			)
+			defer server.Close()
+			pokemonClient := NewClient(server.URL)
 
-			foundResp, err := PokemonByName(tt.pokemonName)
+			foundResp, err := pokemonClient.PokemonByName(tt.pokemonName)
 			if err != tt.expectedError {
 				t.Errorf(
 					"received error %v; want %v",
@@ -259,19 +263,24 @@ const mockOKResp = `{
   }
 `
 
-func mockPokeAPIServer(t *testing.T, mockResp pokemonSpecies, assertCalled func()) {
+func mockPokeAPIServer(
+	t *testing.T,
+	pokemonName string,
+	mockResp string,
+	assertCalled func(),
+) *httptest.Server {
 	t.Helper()
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assertCalled()
-		if r.URL.Path != pokeAPIPokemonSpeciesURL {
+		if r.URL.Path != ("/" + pokemonName) {
 			t.Errorf("Expected to request %s, got: %s", pokeAPIPokemonSpeciesURL, r.URL.Path)
 		}
 		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte(mockOKResp))
+
+		_, err := w.Write([]byte(mockResp))
 		if err != nil {
 			t.Errorf("Expect nil err, got %s", err)
 		}
 	}))
-	defer server.Close()
 }
