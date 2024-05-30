@@ -135,7 +135,7 @@ func mockPokeAPIServer(
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assertCalled()
 		if r.URL.Path != ("/" + pokemonName) {
-			t.Errorf("Expected to request %s, got: %s", pokeAPIPokemonSpeciesURL, r.URL.Path)
+			t.Errorf("Expected to request %s, got: %s", PokemonSpeciesURL, r.URL.Path)
 		}
 		w.WriteHeader(http.StatusOK)
 

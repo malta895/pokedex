@@ -1,9 +1,9 @@
 package pokeapiclient
 
-// pokeAPIPokemonSpeciesURL is the complete URL of the pokemon-species pokeapi endpoint
+// PokemonSpeciesURL is the complete URL of the pokemon-species pokeapi endpoint
 //
 // Reference: https://pokeapi.co/docs/v2#pokemon-species
-const pokeAPIPokemonSpeciesURL = "https://pokeapi.co/api/v2/pokemon-species"
+const PokemonSpeciesURL = "https://pokeapi.co/api/v2/pokemon-species"
 
 // pokemonSpecies is a partial representation of the `PokemonSpecies` pokeapi type
 //
