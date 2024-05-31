@@ -95,6 +95,15 @@ func TestPokemonByName(t *testing.T) {
 			expectedError:   ErrPokemonNotFound,
 			expectApiCalled: true,
 		},
+		"should respond with a generic error if the api responds with a non-404 error": {
+			pokemonName:         "nonexisting",
+			mockPokeAPIResponse: `Bad Request`,
+			nonOKStatusCode:     http.StatusBadRequest,
+
+			expectedPokemon: types.Pokemon{},
+			expectedError:   ErrUnknown,
+			expectApiCalled: true,
+		},
 	}
 
 	for name, tt := range tests {

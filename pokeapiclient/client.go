@@ -3,6 +3,7 @@ package pokeapiclient
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"malta895/pokedex/types"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 
 var (
 	ErrPokemonNotFound = errors.New("pokemon not found")
+	ErrUnknown         = errors.New("cannot retrieve pokemon due to unknown error")
 )
 
 type PokemonClient struct {
@@ -30,16 +32,19 @@ func (p PokemonClient) PokemonByName(name string) (types.Pokemon, error) {
 	if resp.StatusCode == http.StatusNotFound {
 		return types.Pokemon{}, ErrPokemonNotFound
 	}
+	if resp.StatusCode != http.StatusOK {
+		return types.Pokemon{}, fmt.Errorf("%w: %s", ErrUnknown, err)
+	}
 
 	respBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return types.Pokemon{}, err
+		return types.Pokemon{}, fmt.Errorf("%w: %s", ErrUnknown, err)
 	}
 
 	pokemonSpecies := pokemonSpecies{}
 	err = json.Unmarshal(respBytes, &pokemonSpecies)
 	if err != nil {
-		return types.Pokemon{}, err
+		return types.Pokemon{}, fmt.Errorf("%w: %s", ErrUnknown, err)
 	}
 
 	return types.Pokemon{
