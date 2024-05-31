@@ -114,7 +114,7 @@ func TestPokemonByName(t *testing.T) {
 				},
 			)
 			defer server.Close()
-			pokemonClient := NewClient(server.URL)
+			pokemonClient := New(server.URL)
 
 			foundResp, err := pokemonClient.PokemonByName(tt.pokemonName)
 			if err != tt.expectedError {

@@ -16,7 +16,7 @@ type PokemonClient struct {
 	baseUrl string
 }
 
-func NewClient(baseUrl string) PokemonClient {
+func New(baseUrl string) PokemonClient {
 	return PokemonClient{baseUrl}
 }
 
