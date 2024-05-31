@@ -12,6 +12,7 @@ func TestPokemonByName(t *testing.T) {
 	tests := map[string]struct {
 		pokemonName         string
 		mockPokeAPIResponse string
+		nonOKStatusCode     int
 
 		expectedPokemon types.Pokemon
 		expectedError   error
@@ -85,15 +86,29 @@ func TestPokemonByName(t *testing.T) {
 			expectedError:   nil,
 			expectApiCalled: true,
 		},
+		"should respond with the pokemon not found error if the api responds 404": {
+			pokemonName:         "nonexisting",
+			mockPokeAPIResponse: `Not Found`,
+			nonOKStatusCode:     http.StatusNotFound,
+
+			expectedPokemon: types.Pokemon{},
+			expectedError:   ErrPokemonNotFound,
+			expectApiCalled: true,
+		},
 	}
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			var apiCalled bool
+			var statusCode int = http.StatusOK
+			if tt.nonOKStatusCode != 0 {
+				statusCode = tt.nonOKStatusCode
+			}
 			server := mockPokeAPIServer(
 				t,
 				tt.pokemonName,
 				tt.mockPokeAPIResponse,
+				statusCode,
 				func() {
 					apiCalled = true
 				},
@@ -128,6 +143,7 @@ func mockPokeAPIServer(
 	t *testing.T,
 	pokemonName string,
 	mockResp string,
+	statusCode int,
 	assertCalled func(),
 ) *httptest.Server {
 	t.Helper()
@@ -137,7 +153,7 @@ func mockPokeAPIServer(
 		if r.URL.Path != ("/" + pokemonName) {
 			t.Errorf("Expected to request %s, got: %s", PokemonSpeciesURL, r.URL.Path)
 		}
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(statusCode)
 
 		_, err := w.Write([]byte(mockResp))
 		if err != nil {
