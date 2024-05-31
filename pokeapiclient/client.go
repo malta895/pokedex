@@ -33,7 +33,7 @@ func (p PokemonClient) PokemonByName(name string) (types.Pokemon, error) {
 		return types.Pokemon{}, ErrPokemonNotFound
 	}
 	if resp.StatusCode != http.StatusOK {
-		return types.Pokemon{}, fmt.Errorf("%w: %s", ErrUnknown, err)
+		return types.Pokemon{}, ErrUnknown
 	}
 
 	respBytes, err := io.ReadAll(resp.Body)
