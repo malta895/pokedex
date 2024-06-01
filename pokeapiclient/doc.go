@@ -1,3 +1,3 @@
-// Package pokeapiclient provides an Http client useful for calling pokeapi.co APIs 
-// and remap the result to known struct
+// Package pokeapiclient provides an HTTP client useful for calling pokeapi.co APIs
+// and remapping the output results to the application Pokemon data structures
 package pokeapiclient
