@@ -24,7 +24,11 @@ const (
 	TranslatorShakespeare = "shakespeare"
 )
 
-var ErrUnrecognizedTranslator = errors.New("unrecognized translator type")
+var (
+	// ErrUnrecognizedTranslator is returned when the provided TranslatorType is not among the implemented ones
+	ErrUnrecognizedTranslator = errors.New("unrecognized translator type")
+	ErrUnknown                = errors.New("unknown error while translating")
+)
 
 type Client interface {
 	// FunTranslate given a Translator type and a text will output the translation
@@ -54,6 +58,9 @@ func (c *client) FunTranslate(translatorType, text string) (string, error) {
 	resp, err := http.Post(c.baseURL+"/"+path, "application/json", bytes.NewReader(bodyBytes))
 	if err != nil {
 		return "", err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return "", ErrUnknown
 	}
 	respBodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {

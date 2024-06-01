@@ -69,6 +69,38 @@ func TestFunTranslate(t *testing.T) {
 			expectedError:          ErrUnrecognizedTranslator,
 			expectApiCalled:        false,
 		},
+		"should respond with error if the api responds with 429 error": {
+			translatorType: TranslatorShakespeare,
+			inputText:      "You are Mr. Luca",
+			mockAPIResponse: `{
+				"error": {
+					"code": 429,
+					"message": "Too Many Requests: Rate limit of 10 requests per hour exceeded. Please wait for 44 minutes and 58 seconds."
+				  }
+			  }`,
+			nonOKStatusCode: http.StatusTooManyRequests,
+
+			expectedTranslatorPath: shakespearePath,
+			expectedTranslation:    "",
+			expectedError:          ErrUnknown,
+			expectApiCalled:        true,
+		},
+		"should respond with error if the api responds with 500 error": {
+			translatorType: TranslatorShakespeare,
+			inputText:      "You are Mr. Luca",
+			mockAPIResponse: `{
+				"error": {
+					"code": 500,
+					"message": "Internal Server Error"
+				  }
+			  }`,
+			nonOKStatusCode: http.StatusInternalServerError,
+
+			expectedTranslatorPath: shakespearePath,
+			expectedTranslation:    "",
+			expectedError:          ErrUnknown,
+			expectApiCalled:        true,
+		},
 	}
 
 	for name, tt := range tests {
@@ -84,9 +116,8 @@ func TestFunTranslate(t *testing.T) {
 				tt.mockAPIResponse,
 				tt.inputText,
 				statusCode,
-				func() bool {
+				func() {
 					apiCalled = true
-					return tt.expectApiCalled
 				},
 			)
 			defer server.Close()
@@ -114,14 +145,12 @@ func mockFunTranslationsServer(
 	t *testing.T,
 	translatorPath, mockResp, expectedInputText string,
 	statusCode int,
-	assertCalled func() bool,
+	assertCalled func(),
 ) *httptest.Server {
 	t.Helper()
 
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !assertCalled() {
-			return
-		}
+		assertCalled()
 		expectedPath := "/" + translatorPath
 		if r.URL.Path != expectedPath {
 			t.Errorf("Expected to request %s, got: %s", expectedPath, r.URL.Path)
