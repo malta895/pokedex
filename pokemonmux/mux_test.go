@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -56,7 +57,7 @@ func TestBasicPokemonInfo(t *testing.T) {
 			},
 			pokemonName: "mewtwo",
 
-			expectedResp:       `Not Found`,
+			expectedResp:       "Not Found",
 			expectedStatusCode: http.StatusNotFound,
 		},
 		"should respond with 500 Internal Server Error with unknown error": {
@@ -66,7 +67,7 @@ func TestBasicPokemonInfo(t *testing.T) {
 			},
 			pokemonName: "mewtwo",
 
-			expectedResp:       `Internal Server Error`,
+			expectedResp:       "Internal Server Error",
 			expectedStatusCode: http.StatusInternalServerError,
 		},
 	}
@@ -92,6 +93,10 @@ func TestBasicPokemonInfo(t *testing.T) {
 
 			foundResp := respRecorder.Body.String()
 			if json.Valid([]byte(tt.expectedResp)) {
+				contentType := respRecorder.Header().Get("Content-Type")
+				if contentType != "application/json" {
+					t.Errorf("found response contentType=%s; want application/json", contentType)
+				}
 				bodyOK, err := jsonEq(foundResp, tt.expectedResp)
 				if err != nil {
 					t.Error(err)
@@ -100,7 +105,7 @@ func TestBasicPokemonInfo(t *testing.T) {
 					t.Errorf("found respBody=%s; want %s", foundResp, tt.expectedResp)
 				}
 			} else {
-				if foundResp != tt.expectedResp {
+				if strings.TrimSpace(foundResp) != tt.expectedResp {
 					t.Errorf("found respBody=%s, want %s", foundResp, tt.expectedResp)
 				}
 			}

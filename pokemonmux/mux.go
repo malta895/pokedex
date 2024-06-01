@@ -19,25 +19,34 @@ func New(
 	// Endpoint 1: Basic Pokemon Information
 	serveMux.HandleFunc(
 		fmt.Sprintf("GET /pokemon/{%s}", pokemonNamePathWildcard),
-		func(w http.ResponseWriter, r *http.Request) {
-			pokemonName := r.PathValue(pokemonNamePathWildcard)
-			pokemon, err := pokeAPIClient.PokemonByName(pokemonName)
-			if err == pokeapi.ErrPokemonNotFound {
-				w.WriteHeader(http.StatusNotFound)
-				w.Write([]byte(`Not Found`))
-				return
-			}
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				w.Write([]byte(`Internal Server Error`))
-				return
-			}
-			respBody, err := json.Marshal(pokemon)
-			if err != nil {
-
-			}
-			w.Write(respBody)
-		})
+		buildBasicPokemonInfoHandler(pokeAPIClient),
+	)
 
 	return serveMux
+}
+
+func buildBasicPokemonInfoHandler(pokeAPIClient pokeapi.Client) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		pokemonName := r.PathValue(pokemonNamePathWildcard)
+
+		pokemon, err := pokeAPIClient.PokemonByName(pokemonName)
+		if err == pokeapi.ErrPokemonNotFound {
+			http.Error(w, "Not Found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		respBody, err := json.Marshal(pokemon)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(respBody)
+	}
 }
