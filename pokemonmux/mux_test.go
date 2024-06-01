@@ -31,11 +31,14 @@ func TestBasicPokemonInfo(t *testing.T) {
 		"should respond with 200 OK and correct information if client gives it": {
 			mockPokeAPIClient: &mockPokeAPIClient{
 				mockResp: &types.Pokemon{
-					Name: "somepokemon",
+					Name:        "mewtwo",
+					Description: "some description",
+					Habitat: "rare",
+					IsLegendary: true,
 				},
 				mockErr: nil,
 			},
-			pokemonName: "somepokemon",
+			pokemonName: "mewtwo",
 
 			expectedResp: `{
 				"name": "mewtwo",

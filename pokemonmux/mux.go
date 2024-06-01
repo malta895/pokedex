@@ -13,7 +13,14 @@ func New(
 	serveMux := http.NewServeMux()
 
 	// Endpoint 1: Basic Pokemon Information
-	// serveMux.HandleFunc("GET /pokemon/{pokemonName}", func(w http.ResponseWriter, r *http.Request) {})
+	serveMux.HandleFunc("GET /pokemon/{pokemonName}", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`{
+				"name": "mewtwo",
+				"description": "some description",
+				"habitat": "rare",
+				"isLegendary": true
+			}`))
+	})
 
 	return serveMux
 }
