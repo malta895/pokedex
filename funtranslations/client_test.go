@@ -1,68 +1,89 @@
 package funtranslations
 
 import (
+	"fmt"
+	"io"
+	"malta895/pokedex/testutils"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
-// func TestPokemonByName(t *testing.T) {
-// 	tests := map[string]struct {
-// 		pokemonName         string
-// 		mockPokeAPIResponse string
-// 		nonOKStatusCode     int
+func TestFunTranslate(t *testing.T) {
+	tests := map[string]struct {
+		translatorType  string
+		inputText       string
+		mockAPIResponse string
+		nonOKStatusCode int
 
-// 		expectedPokemon *types.Pokemon
-// 		expectedError   error
-// 		expectApiCalled bool
-// 	}{}
+		expectedTranslatorPath string
+		expectedTranslation    string
+		expectedError          error
+		expectApiCalled        bool
+	}{
+		"should respond with correct yoda translation": {
+			translatorType: TranslatorYoda,
+			inputText:      "this is some translation",
+			mockAPIResponse: `{
+				"success": {
+				  "total": 1
+				},
+				"contents": {
+				  "translated": "Some translation, this is",
+				  "text": "this is some translation",
+				  "translation": "yoda"
+				}
+			  }`,
 
-// 	for name, tt := range tests {
-// 		t.Run(name, func(t *testing.T) {
-// 			var apiCalled bool
-// 			var statusCode int = http.StatusOK
-// 			if tt.nonOKStatusCode != 0 {
-// 				statusCode = tt.nonOKStatusCode
-// 			}
-// 			server := mockPokeAPIServer(
-// 				t,
-// 				tt.pokemonName,
-// 				tt.mockPokeAPIResponse,
-// 				statusCode,
-// 				func() {
-// 					apiCalled = true
-// 				},
-// 			)
-// 			defer server.Close()
-// 			pokemonClient := &client{server.URL}
+			expectedTranslatorPath: yodaPath,
+			expectedTranslation:    "Some translation, this is",
+			expectedError:          nil,
+			expectApiCalled:        true,
+		},
+	}
 
-// 			foundResp, err := pokemonClient.FunTranslate(tt.pokemonName)
-// 			if err != tt.expectedError {
-// 				t.Errorf(
-// 					"received error %v; want %v",
-// 					err,
-// 					tt.expectedError,
-// 				)
-// 			}
-// 			if !reflect.DeepEqual(foundResp, tt.expectedPokemon) {
-// 				t.Errorf(
-// 					"PokemonByName(%s) = %#v; want %#v",
-// 					tt.pokemonName,
-// 					foundResp,
-// 					tt.expectedPokemon,
-// 				)
-// 			}
-// 			if tt.expectApiCalled != apiCalled {
-// 				t.Errorf("found apiCalled=%v; want %v", apiCalled, tt.expectApiCalled)
-// 			}
-// 		})
-// 	}
-// }
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			var apiCalled bool
+			var statusCode int = http.StatusOK
+			if tt.nonOKStatusCode != 0 {
+				statusCode = tt.nonOKStatusCode
+			}
+			server := mockFunTranslationsServer(
+				t,
+				tt.expectedTranslatorPath,
+				tt.mockAPIResponse,
+				tt.inputText,
+				statusCode,
+				func() {
+					apiCalled = true
+				},
+			)
+			defer server.Close()
+			pokemonClient := &client{server.URL}
+
+			foundTranslation, err := pokemonClient.FunTranslate(tt.translatorType, tt.inputText)
+			if err != tt.expectedError {
+				t.Errorf(
+					"received error %v; want %v",
+					err,
+					tt.expectedError,
+				)
+			}
+			if tt.expectedTranslation != strings.TrimSpace(foundTranslation) {
+				t.Errorf("found translation %s; want %s", foundTranslation, tt.expectedTranslation)
+			}
+			if tt.expectApiCalled != apiCalled {
+				t.Errorf("found apiCalled=%v; want %v", apiCalled, tt.expectApiCalled)
+			}
+		})
+	}
+}
 
 func mockFunTranslationsServer(
 	t *testing.T,
-	translatorPath string,
-	mockResp string,
+	translatorPath, mockResp, expectedInputText string,
 	statusCode int,
 	assertCalled func(),
 ) *httptest.Server {
@@ -70,13 +91,28 @@ func mockFunTranslationsServer(
 
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assertCalled()
-		expectedPath := funtranslationsBaseURL + "/" + translatorPath
+		expectedPath := "/" + translatorPath
 		if r.URL.Path != expectedPath {
 			t.Errorf("Expected to request %s, got: %s", expectedPath, r.URL.Path)
 		}
+		if r.Method != http.MethodPost {
+			t.Errorf("received req method %s; want %s", r.Method, http.MethodPost)
+		}
+		bodyBytes, err := io.ReadAll(r.Body)
+		if err != nil {
+			t.Errorf("error while reading req body: %s", err)
+		}
+		expectedBody := fmt.Sprintf(`{"text":"%s"}`, expectedInputText)
+		ok, err := testutils.JsonEq(string(bodyBytes), expectedBody)
+		if err != nil {
+			t.Error(err)
+		}
+		if !ok {
+			t.Errorf("found req body %s; want %s", string(bodyBytes), expectedBody)
+		}
 		w.WriteHeader(statusCode)
 
-		_, err := w.Write([]byte(mockResp))
+		_, err = w.Write([]byte(mockResp))
 		if err != nil {
 			t.Errorf("Expect nil err, got %s", err)
 		}

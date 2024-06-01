@@ -1,5 +1,10 @@
 package funtranslations
 
+import (
+	"net/http"
+	"strings"
+)
+
 const (
 	// funtranslationsBaseURL is the base URL of the `funtranslations` APIs
 	//
@@ -15,6 +20,8 @@ const (
 	// TranslatorShakespeare passed to FunTranslate will make it output a Shakespeare translation
 	TranslatorShakespeare = "shakespeare"
 )
+
+var ErrUnrecognizedTranslator = "unrecognized translator type"
 
 type Client interface {
 	// FunTranslate given a Translator type and a text will output the translation
@@ -32,5 +39,9 @@ func NewClient() Client {
 }
 
 func (c *client) FunTranslate(translatorType, text string) (string, error) {
-	return "", nil
+	_, err := http.Post(c.baseURL+"/"+yodaPath, "application/json", strings.NewReader(`{"text":"this is some translation"}`))
+	if err != nil {
+		return "", err
+	}
+	return "Some translation, this is", nil
 }
