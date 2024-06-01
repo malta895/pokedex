@@ -3,6 +3,7 @@ package funtranslations
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 )
@@ -23,7 +24,7 @@ const (
 	TranslatorShakespeare = "shakespeare"
 )
 
-var ErrUnrecognizedTranslator = "unrecognized translator type"
+var ErrUnrecognizedTranslator = errors.New("unrecognized translator type")
 
 type Client interface {
 	// FunTranslate given a Translator type and a text will output the translation
@@ -41,7 +42,10 @@ func NewClient() Client {
 }
 
 func (c *client) FunTranslate(translatorType, text string) (string, error) {
-	path := mapTranslatorToPath(translatorType)
+	path, err := mapTranslatorToPath(translatorType)
+	if err != nil {
+		return "", err
+	}
 	body := &translateReqBody{text}
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
@@ -75,9 +79,12 @@ type translateRespBodyContents struct {
 	Translated string `json:"translated"`
 }
 
-func mapTranslatorToPath(translatorType string) string {
+func mapTranslatorToPath(translatorType string) (string, error) {
 	if translatorType == TranslatorYoda {
-		return yodaPath
+		return yodaPath, nil
 	}
-	return shakespearePath
+	if translatorType == TranslatorShakespeare {
+		return shakespearePath, nil
+	}
+	return "", ErrUnrecognizedTranslator
 }

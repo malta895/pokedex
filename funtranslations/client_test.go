@@ -1,6 +1,7 @@
 package funtranslations
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"malta895/pokedex/testutils"
@@ -60,6 +61,14 @@ func TestFunTranslate(t *testing.T) {
 			expectedError:          nil,
 			expectApiCalled:        true,
 		},
+		"should return correct error if translator type is not recognized": {
+			translatorType: "unknownTranslatorType",
+			inputText:      "You are Mr. Luca",
+
+			expectedTranslatorPath: "",
+			expectedError:          ErrUnrecognizedTranslator,
+			expectApiCalled:        false,
+		},
 	}
 
 	for name, tt := range tests {
@@ -75,15 +84,16 @@ func TestFunTranslate(t *testing.T) {
 				tt.mockAPIResponse,
 				tt.inputText,
 				statusCode,
-				func() {
+				func() bool {
 					apiCalled = true
+					return tt.expectApiCalled
 				},
 			)
 			defer server.Close()
 			pokemonClient := &client{server.URL}
 
 			foundTranslation, err := pokemonClient.FunTranslate(tt.translatorType, tt.inputText)
-			if err != tt.expectedError {
+			if !errors.Is(err, tt.expectedError) {
 				t.Errorf(
 					"received error %v; want %v",
 					err,
@@ -104,12 +114,14 @@ func mockFunTranslationsServer(
 	t *testing.T,
 	translatorPath, mockResp, expectedInputText string,
 	statusCode int,
-	assertCalled func(),
+	assertCalled func() bool,
 ) *httptest.Server {
 	t.Helper()
 
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assertCalled()
+		if !assertCalled() {
+			return
+		}
 		expectedPath := "/" + translatorPath
 		if r.URL.Path != expectedPath {
 			t.Errorf("Expected to request %s, got: %s", expectedPath, r.URL.Path)
