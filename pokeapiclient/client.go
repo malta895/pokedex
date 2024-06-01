@@ -7,6 +7,7 @@ import (
 	"io"
 	"malta895/pokedex/types"
 	"net/http"
+	"net/url"
 )
 
 var (
@@ -14,16 +15,30 @@ var (
 	ErrUnknown         = errors.New("cannot retrieve pokemon due to unknown error")
 )
 
-type PokemonClient struct {
+const (
+	// pokeAPIBaseURL is the base URL of the `pokeapi.co` v2 APIs
+	pokeAPIBaseURL = "https://pokeapi.co/api/v2"
+
+	// pokemonSpeciesPath is the complete URL of the pokemon-species pokeapi endpoint
+	//
+	// Reference: https://pokeapi.co/docs/v2#pokemon-species
+	pokemonSpeciesPath = "/pokemon-species"
+)
+
+type Client struct {
 	baseUrl string
 }
 
-func New(baseUrl string) PokemonClient {
-	return PokemonClient{baseUrl}
+func New() *Client {
+	return &Client{pokeAPIBaseURL}
 }
 
-func (p PokemonClient) PokemonByName(name string) (types.Pokemon, error) {
-	resp, err := http.Get(p.baseUrl + "/" + name)
+func (p *Client) PokemonByName(name string) (types.Pokemon, error) {
+	resUrl, err := url.JoinPath(p.baseUrl, pokemonSpeciesPath, name)
+	if err != nil {
+		return types.Pokemon{}, err
+	}
+	resp, err := http.Get(resUrl)
 	if err != nil {
 		return types.Pokemon{}, err
 	}

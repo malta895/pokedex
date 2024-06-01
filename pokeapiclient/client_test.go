@@ -123,7 +123,7 @@ func TestPokemonByName(t *testing.T) {
 				},
 			)
 			defer server.Close()
-			pokemonClient := New(server.URL)
+			pokemonClient := &Client{server.URL}
 
 			foundResp, err := pokemonClient.PokemonByName(tt.pokemonName)
 			if err != tt.expectedError {
@@ -159,8 +159,9 @@ func mockPokeAPIServer(
 
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assertCalled()
-		if r.URL.Path != ("/" + pokemonName) {
-			t.Errorf("Expected to request %s, got: %s", PokemonSpeciesURL, r.URL.Path)
+		expectedPath := pokemonSpeciesPath + "/" + pokemonName
+		if r.URL.Path != expectedPath {
+			t.Errorf("Expected to request %s, got: %s", expectedPath, r.URL.Path)
 		}
 		w.WriteHeader(statusCode)
 
@@ -169,4 +170,14 @@ func mockPokeAPIServer(
 			t.Errorf("Expect nil err, got %s", err)
 		}
 	}))
+}
+
+func TestNew(t *testing.T) {
+	t.Run("new should return a client with the default pokeapi url", func(t *testing.T) {
+		found := New().baseUrl
+
+		if found != pokeAPIBaseURL {
+			t.Errorf("unexpected baseUrl %s; want %s", found, pokeAPIBaseURL)
+		}
+	})
 }
