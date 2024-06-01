@@ -14,7 +14,7 @@ func TestPokemonByName(t *testing.T) {
 		mockPokeAPIResponse string
 		nonOKStatusCode     int
 
-		expectedPokemon types.Pokemon
+		expectedPokemon *types.Pokemon
 		expectedError   error
 		expectApiCalled bool
 	}{
@@ -37,7 +37,7 @@ func TestPokemonByName(t *testing.T) {
 			  }
 			`,
 
-			expectedPokemon: types.Pokemon{
+			expectedPokemon: &types.Pokemon{
 				Name:        "fakelegend",
 				Description: "This is a mock legendary pokemon",
 				Habitat:     "mockHabitat",
@@ -77,7 +77,7 @@ func TestPokemonByName(t *testing.T) {
 			  }
 			`,
 
-			expectedPokemon: types.Pokemon{
+			expectedPokemon: &types.Pokemon{
 				Name:        "bigpokemon",
 				Description: "This is a mock big pokemon",
 				Habitat:     "mockHabitat",
@@ -91,7 +91,7 @@ func TestPokemonByName(t *testing.T) {
 			mockPokeAPIResponse: `Not Found`,
 			nonOKStatusCode:     http.StatusNotFound,
 
-			expectedPokemon: types.Pokemon{},
+			expectedPokemon: nil,
 			expectedError:   ErrPokemonNotFound,
 			expectApiCalled: true,
 		},
@@ -100,7 +100,7 @@ func TestPokemonByName(t *testing.T) {
 			mockPokeAPIResponse: `Bad Request`,
 			nonOKStatusCode:     http.StatusBadRequest,
 
-			expectedPokemon: types.Pokemon{},
+			expectedPokemon: nil,
 			expectedError:   ErrUnknown,
 			expectApiCalled: true,
 		},

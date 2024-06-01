@@ -33,36 +33,37 @@ func New() *Client {
 	return &Client{pokeAPIBaseURL}
 }
 
-func (p *Client) PokemonByName(name string) (types.Pokemon, error) {
+func (p *Client) PokemonByName(name string) (*types.Pokemon, error) {
 	resUrl, err := url.JoinPath(p.baseUrl, pokemonSpeciesPath, name)
 	if err != nil {
-		return types.Pokemon{}, err
+		return nil, err
 	}
+
 	resp, err := http.Get(resUrl)
 	if err != nil {
-		return types.Pokemon{}, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusNotFound {
-		return types.Pokemon{}, ErrPokemonNotFound
+		return nil, ErrPokemonNotFound
 	}
 	if resp.StatusCode != http.StatusOK {
-		return types.Pokemon{}, ErrUnknown
+		return nil, ErrUnknown
 	}
 
 	respBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return types.Pokemon{}, fmt.Errorf("%w: %s", ErrUnknown, err)
+		return nil, fmt.Errorf("%w: %s", ErrUnknown, err)
 	}
 
 	pokemonSpecies := pokemonSpecies{}
 	err = json.Unmarshal(respBytes, &pokemonSpecies)
 	if err != nil {
-		return types.Pokemon{}, fmt.Errorf("%w: %s", ErrUnknown, err)
+		return nil, fmt.Errorf("%w: %s", ErrUnknown, err)
 	}
 
-	return types.Pokemon{
+	return &types.Pokemon{
 		Name:        pokemonSpecies.Name,
 		Description: retrieveEnglishDescription(pokemonSpecies),
 		Habitat:     pokemonSpecies.Habitat.Name,
