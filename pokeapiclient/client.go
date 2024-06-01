@@ -45,11 +45,8 @@ func (p *Client) PokemonByName(name string) (*types.Pokemon, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusNotFound {
-		return nil, ErrPokemonNotFound
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, ErrUnknown
+	if err := mapStatusToErr(resp.StatusCode); err != nil {
+		return nil, err
 	}
 
 	respBytes, err := io.ReadAll(resp.Body)
@@ -58,20 +55,29 @@ func (p *Client) PokemonByName(name string) (*types.Pokemon, error) {
 	}
 
 	pokemonSpecies := pokemonSpecies{}
-	err = json.Unmarshal(respBytes, &pokemonSpecies)
-	if err != nil {
+	if err := json.Unmarshal(respBytes, &pokemonSpecies); err != nil {
 		return nil, fmt.Errorf("%w: %s", ErrUnknown, err)
 	}
 
 	return &types.Pokemon{
 		Name:        pokemonSpecies.Name,
-		Description: retrieveEnglishDescription(pokemonSpecies),
+		Description: retrieveFirstEnglishDescription(pokemonSpecies),
 		Habitat:     pokemonSpecies.Habitat.Name,
 		IsLegendary: pokemonSpecies.IsLegendary,
 	}, nil
 }
 
-func retrieveEnglishDescription(ps pokemonSpecies) string {
+func mapStatusToErr(statusCode int) error {
+	if statusCode == http.StatusNotFound {
+		return ErrPokemonNotFound
+	}
+	if statusCode != http.StatusOK {
+		return ErrUnknown
+	}
+	return nil
+}
+
+func retrieveFirstEnglishDescription(ps pokemonSpecies) string {
 	for _, flavorTextEntry := range ps.FlavorTextEntries {
 		if flavorTextEntry.Language.Name == "en" {
 			return flavorTextEntry.FlavorText
