@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"malta895/pokedex/pokeapi"
 	"malta895/pokedex/types"
 	"net/http"
 	"net/http/httptest"
@@ -33,7 +34,7 @@ func TestBasicPokemonInfo(t *testing.T) {
 				mockResp: &types.Pokemon{
 					Name:        "mewtwo",
 					Description: "some description",
-					Habitat: "rare",
+					Habitat:     "rare",
 					IsLegendary: true,
 				},
 				mockErr: nil,
@@ -47,6 +48,16 @@ func TestBasicPokemonInfo(t *testing.T) {
 				"isLegendary": true
 			}`,
 			expectedStatusCode: http.StatusOK,
+		},
+		"should respond with 404 Not Found if pokemon is not found": {
+			mockPokeAPIClient: &mockPokeAPIClient{
+				mockResp: nil,
+				mockErr:  pokeapi.ErrPokemonNotFound,
+			},
+			pokemonName: "mewtwo",
+
+			expectedResp:       `Not Found`,
+			expectedStatusCode: http.StatusNotFound,
 		},
 	}
 
@@ -66,17 +77,24 @@ func TestBasicPokemonInfo(t *testing.T) {
 			handler.ServeHTTP(respRecorder, req)
 
 			if tt.expectedStatusCode != respRecorder.Code {
-				t.Errorf("found statusCode=%d; want %d", tt.expectedStatusCode, respRecorder.Code)
+				t.Errorf("found statusCode=%d; want %d", respRecorder.Code, tt.expectedStatusCode)
 			}
 
 			foundResp := respRecorder.Body.String()
-			bodyOK, err := jsonEq(foundResp, tt.expectedResp)
-			if err != nil {
-				t.Error(err)
+			if json.Valid([]byte(tt.expectedResp)) {
+				bodyOK, err := jsonEq(foundResp, tt.expectedResp)
+				if err != nil {
+					t.Error(err)
+				}
+				if !bodyOK {
+					t.Errorf("found respBody=%s; want %s", foundResp, tt.expectedResp)
+				}
+			} else {
+				if foundResp != tt.expectedResp {
+					t.Errorf("found respBody=%s, want %s", foundResp, tt.expectedResp)
+				}
 			}
-			if !bodyOK {
-				t.Errorf("found respBody=%s; want %s", foundResp, tt.expectedResp)
-			}
+
 		})
 	}
 

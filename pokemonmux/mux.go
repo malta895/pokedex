@@ -1,10 +1,14 @@
 package pokemonmux
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"malta895/pokedex/pokeapi"
 	"net/http"
 )
+
+const pokemonNamePathWildcard = "pokemonName"
 
 func New(
 	logger *log.Logger,
@@ -13,14 +17,22 @@ func New(
 	serveMux := http.NewServeMux()
 
 	// Endpoint 1: Basic Pokemon Information
-	serveMux.HandleFunc("GET /pokemon/{pokemonName}", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`{
-				"name": "mewtwo",
-				"description": "some description",
-				"habitat": "rare",
-				"isLegendary": true
-			}`))
-	})
+	serveMux.HandleFunc(
+		fmt.Sprintf("GET /pokemon/{%s}", pokemonNamePathWildcard),
+		func(w http.ResponseWriter, r *http.Request) {
+			pokemonName := r.PathValue(pokemonNamePathWildcard)
+			pokemon, err := pokeAPIClient.PokemonByName(pokemonName)
+			if err != nil {
+				w.WriteHeader(http.StatusNotFound)
+				w.Write([]byte(`Not Found`))
+				return
+			}
+			respBody, err := json.Marshal(pokemon)
+			if err != nil {
+
+			}
+			w.Write(respBody)
+		})
 
 	return serveMux
 }
