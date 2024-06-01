@@ -59,6 +59,16 @@ func TestBasicPokemonInfo(t *testing.T) {
 			expectedResp:       `Not Found`,
 			expectedStatusCode: http.StatusNotFound,
 		},
+		"should respond with 500 Internal Server Error with unknown error": {
+			mockPokeAPIClient: &mockPokeAPIClient{
+				mockResp: nil,
+				mockErr:  pokeapi.ErrUnknown,
+			},
+			pokemonName: "mewtwo",
+
+			expectedResp:       `Internal Server Error`,
+			expectedStatusCode: http.StatusInternalServerError,
+		},
 	}
 
 	for name, tt := range testCases {

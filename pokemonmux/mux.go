@@ -22,9 +22,14 @@ func New(
 		func(w http.ResponseWriter, r *http.Request) {
 			pokemonName := r.PathValue(pokemonNamePathWildcard)
 			pokemon, err := pokeAPIClient.PokemonByName(pokemonName)
-			if err != nil {
+			if err == pokeapi.ErrPokemonNotFound {
 				w.WriteHeader(http.StatusNotFound)
 				w.Write([]byte(`Not Found`))
+				return
+			}
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(`Internal Server Error`))
 				return
 			}
 			respBody, err := json.Marshal(pokemon)
