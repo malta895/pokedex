@@ -1,4 +1,4 @@
-package pokeapiclient
+package pokeapi
 
 import (
 	"encoding/json"
@@ -25,15 +25,19 @@ const (
 	pokemonSpeciesPath = "/pokemon-species"
 )
 
-type Client struct {
+type client struct {
 	baseUrl string
 }
 
-func New() *Client {
-	return &Client{pokeAPIBaseURL}
+type Client interface {
+	PokemonByName(name string) (*types.Pokemon, error)
 }
 
-func (p *Client) PokemonByName(name string) (*types.Pokemon, error) {
+func NewClient() Client {
+	return &client{pokeAPIBaseURL}
+}
+
+func (p *client) PokemonByName(name string) (*types.Pokemon, error) {
 	resUrl, err := url.JoinPath(p.baseUrl, pokemonSpeciesPath, name)
 	if err != nil {
 		return nil, err

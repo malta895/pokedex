@@ -1,4 +1,4 @@
-package pokeapiclient
+package pokeapi
 
 import (
 	"malta895/pokedex/types"
@@ -123,7 +123,7 @@ func TestPokemonByName(t *testing.T) {
 				},
 			)
 			defer server.Close()
-			pokemonClient := &Client{server.URL}
+			pokemonClient := &client{server.URL}
 
 			foundResp, err := pokemonClient.PokemonByName(tt.pokemonName)
 			if err != tt.expectedError {
@@ -174,7 +174,7 @@ func mockPokeAPIServer(
 
 func TestNew(t *testing.T) {
 	t.Run("new should return a client with the default pokeapi url", func(t *testing.T) {
-		found := New().baseUrl
+		found := NewClient().(*client).baseUrl
 
 		if found != pokeAPIBaseURL {
 			t.Errorf("unexpected baseUrl %s; want %s", found, pokeAPIBaseURL)

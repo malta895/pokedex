@@ -1,6 +1,4 @@
-package pokeapiclient
-
-
+package pokeapi
 
 // pokemonSpecies is a partial representation of the `PokemonSpecies` pokeapi type
 //
