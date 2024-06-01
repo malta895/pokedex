@@ -1,8 +1,10 @@
 package funtranslations
 
 import (
+	"bytes"
+	"encoding/json"
+	"io"
 	"net/http"
-	"strings"
 )
 
 const (
@@ -39,9 +41,43 @@ func NewClient() Client {
 }
 
 func (c *client) FunTranslate(translatorType, text string) (string, error) {
-	_, err := http.Post(c.baseURL+"/"+yodaPath, "application/json", strings.NewReader(`{"text":"this is some translation"}`))
+	path := mapTranslatorToPath(translatorType)
+	body := &translateReqBody{text}
+	bodyBytes, err := json.Marshal(body)
 	if err != nil {
 		return "", err
 	}
-	return "Some translation, this is", nil
+	resp, err := http.Post(c.baseURL+"/"+path, "application/json", bytes.NewReader(bodyBytes))
+	if err != nil {
+		return "", err
+	}
+	respBodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	respBody := &translateRespBody{}
+	if err := json.Unmarshal(respBodyBytes, respBody); err != nil {
+		return "", err
+	}
+
+	return respBody.Contents.Translated, nil
+}
+
+type translateReqBody struct {
+	Text string `json:"text"`
+}
+
+type translateRespBody struct {
+	Contents translateRespBodyContents `json:"contents"`
+}
+
+type translateRespBodyContents struct {
+	Translated string `json:"translated"`
+}
+
+func mapTranslatorToPath(translatorType string) string {
+	if translatorType == TranslatorYoda {
+		return yodaPath
+	}
+	return shakespearePath
 }

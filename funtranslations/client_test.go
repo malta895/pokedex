@@ -41,6 +41,25 @@ func TestFunTranslate(t *testing.T) {
 			expectedError:          nil,
 			expectApiCalled:        true,
 		},
+		"should respond with correct shakespeare translation": {
+			translatorType: TranslatorShakespeare,
+			inputText:      "You are Mr. Luca",
+			mockAPIResponse: `{
+				"success": {
+				  "total": 1
+				},
+				"contents": {
+				  "translated": "Ye art mr. Luca",
+				  "text": "You are Mr. Luca",
+				  "translation": "shakespeare"
+				}
+			  }`,
+
+			expectedTranslatorPath: shakespearePath,
+			expectedTranslation:    "Ye art mr. Luca",
+			expectedError:          nil,
+			expectApiCalled:        true,
+		},
 	}
 
 	for name, tt := range tests {
