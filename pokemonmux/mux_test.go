@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 	"malta895/pokedex/pokeapi"
+	"malta895/pokedex/testutils"
 	"malta895/pokedex/types"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"strings"
 	"testing"
 )
@@ -97,7 +97,7 @@ func TestBasicPokemonInfo(t *testing.T) {
 				if contentType != "application/json" {
 					t.Errorf("found response contentType=%s; want application/json", contentType)
 				}
-				bodyOK, err := jsonEq(foundResp, tt.expectedResp)
+				bodyOK, err := testutils.JsonEq(foundResp, tt.expectedResp)
 				if err != nil {
 					t.Error(err)
 				}
@@ -113,21 +113,4 @@ func TestBasicPokemonInfo(t *testing.T) {
 		})
 	}
 
-}
-
-func jsonEq(foundBody, expectedBody string) (bool, error) {
-	var o1 interface{}
-	var o2 interface{}
-
-	var err error
-	err = json.Unmarshal([]byte(foundBody), &o1)
-	if err != nil {
-		return false, fmt.Errorf("json syntax error in found body: %s", err)
-	}
-	err = json.Unmarshal([]byte(expectedBody), &o2)
-	if err != nil {
-		return false, fmt.Errorf("json syntax error in expected body: %s", err)
-	}
-
-	return reflect.DeepEqual(o1, o2), nil
 }
