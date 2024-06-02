@@ -201,11 +201,12 @@ Example response:
 
 ## Project Design and Architecture
 
-The project is a simple web API service, written in Go, that exposes a single endpoint to retrieve information about a Pokemon.
+The project is a simple web API service, written in Go.
 
 Given the trivial nature of the project, the architecture is very simple, yet attention has been given to the separation of concerns, and to the testability of the code.
 
 Here is the package structure of the project:
+
 ```
 .
 ├── apiclients
@@ -232,9 +233,10 @@ For separation of concerns, the external API clients have been placed in the `ap
 
 The API clients expose simple interfaces, that has been mocked in the tests, to allow for easy testing of the server.
 
-The `pokemonmux` package contains the HTTP server, that uses the Go standard library `net/http` package's `ServeMux` to handle the incoming requests.
+The `pokemonmux` package contains the HTTP server, that uses the Go standard library `net/http` `ServeMux` to handle the incoming requests.
 
-For simplicity, handlers contains some business logic, such has the logic to decide which translation type should be used. This could be extracted in a separate package, but given the simplicity of the project, it has been left in the handlers, taking care however to separate it in a different function.
+For simplicity, handlers contains some business logic, such as the code to decide which translation type should be used. 
+This could be extracted in a separate package, but given the simplicity of the project, it has been simply left in the handlers package, taking care however to separate it in a different function.
 
 The project has been tested with unit tests, that mock the external API clients, and with integration tests, that test the server with the real external API clients.
 
