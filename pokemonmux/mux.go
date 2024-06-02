@@ -50,7 +50,7 @@ func buildPokemonHandler(
 		}
 
 		if translateDescription {
-			translatePokemonDescription(logger, w, pokemon, funtranslationsClient)
+			translatePokemonDescription(logger, pokemon, funtranslationsClient)
 		}
 
 		writeResponse(logger, w, http.StatusOK, pokemon)
@@ -59,7 +59,6 @@ func buildPokemonHandler(
 
 func translatePokemonDescription(
 	logger *log.Logger,
-	w http.ResponseWriter,
 	pokemon *types.Pokemon,
 	funtranslationsClient funtranslations.Client,
 ) {
