@@ -116,7 +116,7 @@ pokedex.exe
 
 Once spinned up, the executable will expose the API service at `http://localhost:3000`.
 
-To expose the project on a different port, you can set the `HTTP_PORT` to a value of your choice.
+To expose the project on a different port, you can set the env variable `HTTP_PORT` to a value of your choice.
 
 For example, to use the port 8080, run on a unix-like OS:
 
@@ -130,6 +130,8 @@ You can achieve the same in Windows with:
 set HTTP_PORT=8080
 pokedex.exe
 ```
+
+Once the server starts, a log message will be printed on the console, indicating the port the server is listening on.
 
 #### Testing
 
@@ -146,12 +148,11 @@ To run them, you can use the `-tags=integration` flag.
 go test -tags=integration ./. -run TestIntegration
 ```
 
-The above command will run the integration tests, along with the unit tests.
+The above command will enable the build of integration tests, and run them.
 
 A GitHub Actions workflow is provided to run the tests on every push to the repository.
 Additionally, a manual workflow is provided to run the integration tests.
-
-The workflow run tests on Linux, Windows and MacOS.
+The workflows run tests on Linux, Windows and MacOS.
 
 ## Usage
 
@@ -179,13 +180,18 @@ Example response:
   "isLegendary": false
 }
 ```
-  
 
 ### Translated Pokemon Information
 
 Endpoint signature: `GET /pokemon/translated/{pokemonName}`
 
 Retrieves information about a Pokemon, given its name, and translates its description, by leveraging the [PokeAPI](https://pokeapi.co/) and the [Fun Translations API](https://funtranslations.com/).
+
+The translation follows the following rules:
+
+1. If the Pokemon’s habitat is cave or it’s a legendary Pokemon then it applies the Yoda translation.
+1. For all other Pokemon, it applies the Shakespeare translation.
+1. If any error occurs during the translation, the Pokemon with the original description is returned. A log message prints the error status code returned by the translation API. 
 
 Example usage:
   
@@ -244,6 +250,8 @@ For simplicity, handlers contains some business logic, such as the code to decid
 This could be extracted in a separate package, but given the simplicity of the project, it has been simply left in the handlers package, taking care however to separate it in a different function.
 
 The project has been tested with unit tests, that mock the external API clients, and with integration tests, that test the server with the real external API clients.
+
+No external libraries have been used, to keep the project simple and self-contained.
 
 ## Production-Ready Considerations
 
