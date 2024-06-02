@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"runtime"
 	"syscall"
 	"testing"
 	"time"
@@ -11,6 +12,9 @@ import (
 
 func TestMain(t *testing.T) {
 	t.Run("server should shut down after a SIGINT", func(t *testing.T) {
+		if runtime.GOOS == "windows" {
+			t.Skip("skipping test on windows since SIGINT is not supported on this os")
+		}
 		httpPort := "5000"
 		t.Setenv("HTTP_PORT", httpPort)
 
