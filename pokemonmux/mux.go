@@ -68,8 +68,10 @@ func buildTranslatedPokemonDescriptionHandler(pokeAPIClient pokeapi.Client, funt
 		if p.IsLegendary || p.Habitat == "cave" {
 			translatorType = funtranslations.TranslatorYoda
 		}
-		t, _ := funtranslationsClient.FunTranslate(translatorType, p.Description)
-		p.Description = t
+		translatedDesc, err := funtranslationsClient.FunTranslate(translatorType, p.Description)
+		if err == nil {
+			p.Description = translatedDesc
+		}
 		w.Header().Add("Content-Type", "application/json")
 		respBody, _ := json.Marshal(p)
 		w.Write(respBody)

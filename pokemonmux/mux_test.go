@@ -2,6 +2,7 @@ package pokemonmux
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"malta895/pokedex/apiclients/funtranslations"
@@ -218,6 +219,32 @@ func TestTranslatedPokemonInfo(t *testing.T) {
 			expectedResp: `{
 				"name": "somepokemon",
 				"description": "Thee is some pokemon",
+				"habitat": "somehabitat",
+				"isLegendary": false
+			}`,
+			expectedStatusCode: http.StatusOK,
+		},
+		"should respond with the original pokemon description if translation fails with error": {
+			mockPokeAPIClient: &mockPokeAPIClient{
+				mockResp: &types.Pokemon{
+					Name:        "somepokemon",
+					Habitat:     "somehabitat",
+					Description: "this is some pokemon",
+					IsLegendary: false,
+				},
+				mockErr: nil,
+			},
+			mockFunTranslationsClient: &mockFunTranslationsClient{
+				mockResp: "",
+				mockErr:  errors.New("some error"),
+			},
+			pokemonName: "somepokemon",
+
+			expectedTranslatorType: funtranslations.TranslatorShakespeare,
+			expectedText:           "this is some pokemon",
+			expectedResp: `{
+				"name": "somepokemon",
+				"description": "this is some pokemon",
 				"habitat": "somehabitat",
 				"isLegendary": false
 			}`,
