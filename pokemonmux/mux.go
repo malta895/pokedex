@@ -6,6 +6,7 @@ import (
 	"log"
 	"malta895/pokedex/apiclients/funtranslations"
 	"malta895/pokedex/apiclients/pokeapi"
+	"malta895/pokedex/types"
 	"net/http"
 )
 
@@ -21,70 +22,81 @@ func New(
 	// Endpoint 1: Basic Pokemon Information
 	serveMux.HandleFunc(
 		fmt.Sprintf("GET /pokemon/{%s}", pokemonNamePathWildcard),
-		buildBasicPokemonInfoHandler(pokeAPIClient),
+		buildPokemonHandler(logger, pokeAPIClient, funtranslationsClient, false),
 	)
 
 	// Endpoint 2: Translated Pokemon Description
 	serveMux.HandleFunc(
 		fmt.Sprintf("GET /pokemon/translated/{%s}", pokemonNamePathWildcard),
-		buildTranslatedPokemonDescriptionHandler(pokeAPIClient, funtranslationsClient),
+		buildPokemonHandler(logger, pokeAPIClient, funtranslationsClient, true),
 	)
 
 	return serveMux
 }
 
-func buildBasicPokemonInfoHandler(pokeAPIClient pokeapi.Client) func(w http.ResponseWriter, r *http.Request) {
+func buildPokemonHandler(logger *log.Logger, pokeAPIClient pokeapi.Client, funtranslationsClient funtranslations.Client, translateDescription bool) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		pokemonName := r.PathValue(pokemonNamePathWildcard)
 
 		pokemon, err := pokeAPIClient.PokemonByName(pokemonName)
-		if err == pokeapi.ErrPokemonNotFound {
-			http.Error(w, "Not Found", http.StatusNotFound)
-			return
-		}
 		if err != nil {
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			handlePokemonError(logger, w, "error retrieving pokemon", err)
 			return
 		}
 
-		respBody, err := json.Marshal(pokemon)
-		if err != nil {
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
+		if translateDescription {
+			translatePokemonDescription(logger, w, pokemon, funtranslationsClient)
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write(respBody)
+		writeResponse(logger, w, http.StatusOK, pokemon)
 	}
 }
 
-func buildTranslatedPokemonDescriptionHandler(pokeAPIClient pokeapi.Client, funtranslationsClient funtranslations.Client) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		pokemonName := r.PathValue(pokemonNamePathWildcard)
-
-		p, err := pokeAPIClient.PokemonByName(pokemonName)
-		if err == pokeapi.ErrPokemonNotFound {
-			http.Error(w, "Not Found", http.StatusNotFound)
-		}
-		if err != nil {
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-		translatorType := funtranslations.TranslatorShakespeare
-		if p.IsLegendary || p.Habitat == "cave" {
-			translatorType = funtranslations.TranslatorYoda
-		}
-		translatedDesc, err := funtranslationsClient.FunTranslate(translatorType, p.Description)
-		if err == nil {
-			p.Description = translatedDesc
-		}
-		w.Header().Add("Content-Type", "application/json")
-		respBody, err := json.Marshal(p)
-		if err != nil {
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-		w.Write(respBody)
+func translatePokemonDescription(
+	logger *log.Logger,
+	w http.ResponseWriter,
+	pokemon *types.Pokemon,
+	funtranslationsClient funtranslations.Client,
+) {
+	translatorType := funtranslations.TranslatorShakespeare
+	if pokemon.IsLegendary || pokemon.Habitat == "cave" {
+		translatorType = funtranslations.TranslatorYoda
 	}
+	translatedDesc, err := funtranslationsClient.FunTranslate(translatorType, pokemon.Description)
+	if err != nil {
+		logger.Printf("error translating description for pokemon %s: %v", pokemon.Name, err)
+		return
+	}
+	pokemon.Description = translatedDesc
+}
+
+func handlePokemonError(
+	logger *log.Logger,
+	w http.ResponseWriter,
+	message string,
+	err error,
+) {
+	logger.Printf("%s: %v", message, err)
+	if err == pokeapi.ErrPokemonNotFound {
+		http.Error(w, "Not Found", http.StatusNotFound)
+		return
+	}
+	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+}
+
+func writeResponse(
+	logger *log.Logger,
+	w http.ResponseWriter,
+	statusCode int,
+	data interface{},
+) {
+	respBody, err := json.Marshal(data)
+	if err != nil {
+		handlePokemonError(logger, w, "error marshalling response", err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	w.Write(respBody)
 }
