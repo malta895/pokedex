@@ -139,7 +139,8 @@ To run the tests, you can use the `go test` command.
 go test ./...
 ```
 
-Integration tests are not run by default, to run them, you can use the `-tags=integration` flag.
+Integration tests are not run by default for performance reasons, as they require an internet connection to run, and they can concur to the rate limiting of the external APIs.
+To run them, you can use the `-tags=integration` flag.
 
 ```bash
 go test -tags=integration ./...

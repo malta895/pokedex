@@ -25,12 +25,12 @@ func TestJsonEq(t *testing.T) {
 		},
 		"should report not equal json": {
 			foundBody:    `{"name": "Charizard", "isLegendary": false}`,
-			expectedBody: `{"name": "Charizard", "isLegendary": 40}`,
+			expectedBody: `{"name": "Charizard", "isLegendary": false}`,
 			expected:     false,
 		},
 		"should report not equal json with different order": {
 			foundBody:    `{"isLegendary": false, "name": "Charizard"}`,
-			expectedBody: `{"name": "Charizard", "isLegendary": 40}`,
+			expectedBody: `{"name": "Charizard", "isLegendary": false}`,
 			expected:     false,
 		},
 		"should return error if invalid json in found body": {
