@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"malta895/pokedex/pokeapi"
+	"malta895/pokedex/apiclients/funtranslations"
+	"malta895/pokedex/apiclients/pokeapi"
 	"net/http"
 )
 
@@ -13,6 +14,7 @@ const pokemonNamePathWildcard = "pokemonName"
 func New(
 	logger *log.Logger,
 	pokeAPIClient pokeapi.Client,
+	funtranslationsClient funtranslations.Client,
 ) *http.ServeMux {
 	serveMux := http.NewServeMux()
 
@@ -20,6 +22,24 @@ func New(
 	serveMux.HandleFunc(
 		fmt.Sprintf("GET /pokemon/{%s}", pokemonNamePathWildcard),
 		buildBasicPokemonInfoHandler(pokeAPIClient),
+	)
+
+	// Endpoint 2: Translated Pokemon Description
+	serveMux.HandleFunc(
+		fmt.Sprintf("GET /pokemon/translated/{%s}", pokemonNamePathWildcard),
+		func(w http.ResponseWriter, r *http.Request) {
+			pokeAPIClient.PokemonByName("somecavepokemon")
+			funtranslationsClient.FunTranslate(
+				funtranslations.TranslatorYoda, "this is some cave pokemon",
+			)
+			w.Header().Add("Content-Type", "application/json")
+			w.Write([]byte(`{
+				"name": "somecavepokemon",
+				"description": "some cave pokemon, this is",
+				"habitat": "cave",
+				"isLegendary": false
+			}`))
+		},
 	)
 
 	return serveMux
