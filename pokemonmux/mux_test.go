@@ -191,6 +191,32 @@ func TestTranslatedPokemonInfo(t *testing.T) {
 			}`,
 			expectedStatusCode: http.StatusOK,
 		},
+		"should respond with a shakespeare translation for a pokemon neither legendar nor with cave habitat": {
+			mockPokeAPIClient: &mockPokeAPIClient{
+				mockResp: &types.Pokemon{
+					Name:        "somepokemon",
+					Habitat:     "somehabitat",
+					Description: "this is some pokemon",
+					IsLegendary: false,
+				},
+				mockErr: nil,
+			},
+			mockFunTranslationsClient: &mockFunTranslationsClient{
+				mockResp: "Thee is some pokemon",
+				mockErr:  nil,
+			},
+			pokemonName: "somepokemon",
+
+			expectedTranslatorType: funtranslations.TranslatorShakespeare,
+			expectedText:           "this is some pokemon",
+			expectedResp: `{
+				"name": "somepokemon",
+				"description": "Thee is some pokemon",
+				"habitat": "somehabitat",
+				"isLegendary": false
+			}`,
+			expectedStatusCode: http.StatusOK,
+		},
 	}
 
 	for name, tt := range testCases {

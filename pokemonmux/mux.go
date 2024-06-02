@@ -29,9 +29,11 @@ func New(
 		fmt.Sprintf("GET /pokemon/translated/{%s}", pokemonNamePathWildcard),
 		func(w http.ResponseWriter, r *http.Request) {
 			p, _ := pokeAPIClient.PokemonByName("somecavepokemon")
-			t, _ := funtranslationsClient.FunTranslate(
-				funtranslations.TranslatorYoda, p.Description,
-			)
+			translatorType := funtranslations.TranslatorShakespeare
+			if p.IsLegendary || p.Habitat == "cave" {
+				translatorType = funtranslations.TranslatorYoda
+			}
+			t, _ := funtranslationsClient.FunTranslate(translatorType, p.Description)
 			p.Description = t
 			w.Header().Add("Content-Type", "application/json")
 			respBody, _ := json.Marshal(p)
