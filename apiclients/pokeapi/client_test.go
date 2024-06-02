@@ -16,7 +16,7 @@ func TestPokemonByName(t *testing.T) {
 
 		expectedPokemon *types.Pokemon
 		expectedError   error
-		expectApiCalled bool
+		expectAPICalled bool
 	}{
 		"should respond with expected body with a mock legendary pokemon": {
 			pokemonName: "fakelegend",
@@ -44,7 +44,7 @@ func TestPokemonByName(t *testing.T) {
 				IsLegendary: true,
 			},
 			expectedError:   nil,
-			expectApiCalled: true,
+			expectAPICalled: true,
 		},
 		"should respond with the first english description": {
 			pokemonName: "bigpokemon",
@@ -84,7 +84,7 @@ func TestPokemonByName(t *testing.T) {
 				IsLegendary: false,
 			},
 			expectedError:   nil,
-			expectApiCalled: true,
+			expectAPICalled: true,
 		},
 		"should respond with the pokemon not found error if the api responds 404": {
 			pokemonName:         "nonexisting",
@@ -93,7 +93,7 @@ func TestPokemonByName(t *testing.T) {
 
 			expectedPokemon: nil,
 			expectedError:   ErrPokemonNotFound,
-			expectApiCalled: true,
+			expectAPICalled: true,
 		},
 		"should respond with a generic error if the api responds with a non-404 error": {
 			pokemonName:         "nonexisting",
@@ -102,7 +102,7 @@ func TestPokemonByName(t *testing.T) {
 
 			expectedPokemon: nil,
 			expectedError:   ErrUnknown,
-			expectApiCalled: true,
+			expectAPICalled: true,
 		},
 	}
 
@@ -141,8 +141,8 @@ func TestPokemonByName(t *testing.T) {
 					tt.expectedPokemon,
 				)
 			}
-			if tt.expectApiCalled != apiCalled {
-				t.Errorf("found apiCalled=%v; want %v", apiCalled, tt.expectApiCalled)
+			if tt.expectAPICalled != apiCalled {
+				t.Errorf("found apiCalled=%v; want %v", apiCalled, tt.expectAPICalled)
 			}
 		})
 	}
@@ -174,10 +174,10 @@ func mockPokeAPIServer(
 
 func TestNew(t *testing.T) {
 	t.Run("new should return a client with the default pokeapi url", func(t *testing.T) {
-		found := NewClient().(*client).baseUrl
+		found := NewClient().(*client).baseURL
 
 		if found != pokeAPIBaseURL {
-			t.Errorf("unexpected baseUrl %s; want %s", found, pokeAPIBaseURL)
+			t.Errorf("unexpected baseURL %s; want %s", found, pokeAPIBaseURL)
 		}
 	})
 }

@@ -21,7 +21,7 @@ func TestFunTranslate(t *testing.T) {
 		expectedTranslatorPath string
 		expectedTranslation    string
 		expectedError          error
-		expectApiCalled        bool
+		expectAPICalled        bool
 	}{
 		"should respond with correct yoda translation": {
 			translatorType: TranslatorYoda,
@@ -40,7 +40,7 @@ func TestFunTranslate(t *testing.T) {
 			expectedTranslatorPath: yodaPath,
 			expectedTranslation:    "Some translation, this is",
 			expectedError:          nil,
-			expectApiCalled:        true,
+			expectAPICalled:        true,
 		},
 		"should respond with correct shakespeare translation": {
 			translatorType: TranslatorShakespeare,
@@ -59,7 +59,7 @@ func TestFunTranslate(t *testing.T) {
 			expectedTranslatorPath: shakespearePath,
 			expectedTranslation:    "Ye art mr. Luca",
 			expectedError:          nil,
-			expectApiCalled:        true,
+			expectAPICalled:        true,
 		},
 		"should return correct error if translator type is not recognized": {
 			translatorType: "unknownTranslatorType",
@@ -67,7 +67,7 @@ func TestFunTranslate(t *testing.T) {
 
 			expectedTranslatorPath: "",
 			expectedError:          ErrUnrecognizedTranslator,
-			expectApiCalled:        false,
+			expectAPICalled:        false,
 		},
 		"should respond with error if the api responds with 429 error": {
 			translatorType: TranslatorShakespeare,
@@ -83,7 +83,7 @@ func TestFunTranslate(t *testing.T) {
 			expectedTranslatorPath: shakespearePath,
 			expectedTranslation:    "",
 			expectedError:          ErrAPIStatusCode,
-			expectApiCalled:        true,
+			expectAPICalled:        true,
 		},
 		"should respond with error if the api responds with 500 error": {
 			translatorType: TranslatorShakespeare,
@@ -99,7 +99,7 @@ func TestFunTranslate(t *testing.T) {
 			expectedTranslatorPath: shakespearePath,
 			expectedTranslation:    "",
 			expectedError:          ErrAPIStatusCode,
-			expectApiCalled:        true,
+			expectAPICalled:        true,
 		},
 	}
 
@@ -134,8 +134,8 @@ func TestFunTranslate(t *testing.T) {
 			if tt.expectedTranslation != strings.TrimSpace(foundTranslation) {
 				t.Errorf("found translation %s; want %s", foundTranslation, tt.expectedTranslation)
 			}
-			if tt.expectApiCalled != apiCalled {
-				t.Errorf("found apiCalled=%v; want %v", apiCalled, tt.expectApiCalled)
+			if tt.expectAPICalled != apiCalled {
+				t.Errorf("found apiCalled=%v; want %v", apiCalled, tt.expectAPICalled)
 			}
 		})
 	}
@@ -184,7 +184,7 @@ func TestNew(t *testing.T) {
 		found := NewClient().(*client).baseURL
 
 		if found != funtranslationsBaseURL {
-			t.Errorf("unexpected baseUrl %s; want %s", found, funtranslationsBaseURL)
+			t.Errorf("unexpected baseURL %s; want %s", found, funtranslationsBaseURL)
 		}
 	})
 }

@@ -26,7 +26,7 @@ const (
 )
 
 type client struct {
-	baseUrl string
+	baseURL string
 }
 
 type Client interface {
@@ -38,12 +38,12 @@ func NewClient() Client {
 }
 
 func (p *client) PokemonByName(name string) (*types.Pokemon, error) {
-	resUrl, err := url.JoinPath(p.baseUrl, pokemonSpeciesPath, name)
+	resURL, err := url.JoinPath(p.baseURL, pokemonSpeciesPath, name)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := http.Get(resUrl)
+	resp, err := http.Get(resURL)
 	if err != nil {
 		return nil, err
 	}
