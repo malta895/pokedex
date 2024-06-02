@@ -143,10 +143,15 @@ Integration tests are not run by default for performance reasons, as they requir
 To run them, you can use the `-tags=integration` flag.
 
 ```bash
-go test -tags=integration ./...
+go test -tags=integration ./. -run TestIntegration
 ```
 
 The above command will run the integration tests, along with the unit tests.
+
+A GitHub Actions workflow is provided to run the tests on every push to the repository.
+Additionally, a manual workflow is provided to run the integration tests.
+
+The workflow run tests on Linux, Windows and MacOS.
 
 ## Usage
 
