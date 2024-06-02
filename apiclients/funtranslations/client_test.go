@@ -82,7 +82,7 @@ func TestFunTranslate(t *testing.T) {
 
 			expectedTranslatorPath: shakespearePath,
 			expectedTranslation:    "",
-			expectedError:          ErrUnknown,
+			expectedError:          ErrAPIStatusCode,
 			expectApiCalled:        true,
 		},
 		"should respond with error if the api responds with 500 error": {
@@ -98,7 +98,7 @@ func TestFunTranslate(t *testing.T) {
 
 			expectedTranslatorPath: shakespearePath,
 			expectedTranslation:    "",
-			expectedError:          ErrUnknown,
+			expectedError:          ErrAPIStatusCode,
 			expectApiCalled:        true,
 		},
 	}

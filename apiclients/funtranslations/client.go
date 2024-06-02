@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 )
 
 const (
@@ -27,7 +29,7 @@ const (
 var (
 	// ErrUnrecognizedTranslator is returned when the provided TranslatorType is not among the implemented ones
 	ErrUnrecognizedTranslator = errors.New("unrecognized translator type")
-	ErrUnknown                = errors.New("unknown error while translating")
+	ErrAPIStatusCode          = errors.New("unexpected status code from remote api")
 )
 
 type Client interface {
@@ -55,12 +57,16 @@ func (c *client) FunTranslate(translatorType, text string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	resp, err := http.Post(c.baseURL+"/"+path, "application/json", bytes.NewReader(bodyBytes))
+	reqURL, err := url.JoinPath(c.baseURL, path)
+	if err != nil {
+		return "", err
+	}
+	resp, err := http.Post(reqURL, "application/json", bytes.NewReader(bodyBytes))
 	if err != nil {
 		return "", err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return "", ErrUnknown
+		return "", fmt.Errorf("%w: status %d", ErrAPIStatusCode, resp.StatusCode)
 	}
 	respBodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
