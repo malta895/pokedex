@@ -41,6 +41,7 @@ func buildPokemonHandler(
 	translateDescription bool,
 ) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		logger.Printf("received request: %s %s", r.Method, r.URL.Path)
 		pokemonName := r.PathValue(pokemonNamePathWildcard)
 
 		pokemon, err := pokeAPIClient.PokemonByName(pokemonName)
