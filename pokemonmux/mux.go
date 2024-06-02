@@ -34,7 +34,12 @@ func New(
 	return serveMux
 }
 
-func buildPokemonHandler(logger *log.Logger, pokeAPIClient pokeapi.Client, funtranslationsClient funtranslations.Client, translateDescription bool) func(w http.ResponseWriter, r *http.Request) {
+func buildPokemonHandler(
+	logger *log.Logger,
+	pokeAPIClient pokeapi.Client,
+	funtranslationsClient funtranslations.Client,
+	translateDescription bool,
+) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		pokemonName := r.PathValue(pokemonNamePathWildcard)
 
