@@ -63,7 +63,14 @@ func buildTranslatedPokemonDescriptionHandler(pokeAPIClient pokeapi.Client, funt
 	return func(w http.ResponseWriter, r *http.Request) {
 		pokemonName := r.PathValue(pokemonNamePathWildcard)
 
-		p, _ := pokeAPIClient.PokemonByName(pokemonName)
+		p, err := pokeAPIClient.PokemonByName(pokemonName)
+		if err == pokeapi.ErrPokemonNotFound {
+			http.Error(w, "Not Found", http.StatusNotFound)
+		}
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
 		translatorType := funtranslations.TranslatorShakespeare
 		if p.IsLegendary || p.Habitat == "cave" {
 			translatorType = funtranslations.TranslatorYoda
@@ -73,7 +80,11 @@ func buildTranslatedPokemonDescriptionHandler(pokeAPIClient pokeapi.Client, funt
 			p.Description = translatedDesc
 		}
 		w.Header().Add("Content-Type", "application/json")
-		respBody, _ := json.Marshal(p)
+		respBody, err := json.Marshal(p)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
 		w.Write(respBody)
 	}
 }

@@ -250,6 +250,34 @@ func TestTranslatedPokemonInfo(t *testing.T) {
 			}`,
 			expectedStatusCode: http.StatusOK,
 		},
+		"should respond with 404 Not Found if pokemon is not found": {
+			mockPokeAPIClient: &mockPokeAPIClient{
+				mockResp: nil,
+				mockErr:  pokeapi.ErrPokemonNotFound,
+			},
+			mockFunTranslationsClient: &mockFunTranslationsClient{
+				mockResp: "",
+				mockErr:  nil,
+			},
+			pokemonName: "mewtwo",
+
+			expectedResp:       "Not Found",
+			expectedStatusCode: http.StatusNotFound,
+		},
+		"should respond with 500 Internal Server Error with unknown error": {
+			mockPokeAPIClient: &mockPokeAPIClient{
+				mockResp: nil,
+				mockErr:  pokeapi.ErrUnknown,
+			},
+			mockFunTranslationsClient: &mockFunTranslationsClient{
+				mockResp: "",
+				mockErr:  nil,
+			},
+			pokemonName: "mewtwo",
+
+			expectedResp:       "Internal Server Error",
+			expectedStatusCode: http.StatusInternalServerError,
+		},
 	}
 
 	for name, tt := range testCases {
