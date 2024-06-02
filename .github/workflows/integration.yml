@@ -1,4 +1,4 @@
-name: Pokedex Go Project Build and Test
+name: Pokedex Integration Test
 
 on: workflow_dispatch
 jobs:
