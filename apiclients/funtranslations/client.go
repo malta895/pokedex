@@ -80,16 +80,16 @@ func (c *client) FunTranslate(translatorType, text string) (string, error) {
 	return respBody.Contents.Translated, nil
 }
 
+// translateReqBody is a partial representation of the request body of the funtranslations API
 type translateReqBody struct {
 	Text string `json:"text"`
 }
 
+// translateRespBody is a partial representation of the response body of the funtranslations API
 type translateRespBody struct {
-	Contents translateRespBodyContents `json:"contents"`
-}
-
-type translateRespBodyContents struct {
-	Translated string `json:"translated"`
+	Contents struct {
+		Translated string `json:"translated"`
+	} `json:"contents"`
 }
 
 func mapTranslatorToPath(translatorType string) (string, error) {

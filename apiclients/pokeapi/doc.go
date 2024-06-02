@@ -1,3 +1,3 @@
-// Package pokeapi provides an HTTP client useful for calling pokeapi.co APIs
-// and remapping the output results to the application Pokemon data structures
+// Package pokeapi provides a client for the PokeAPI.
+// It also provides a way to map the API response to the application data structures.
 package pokeapi
