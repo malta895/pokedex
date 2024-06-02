@@ -27,20 +27,7 @@ func New(
 	// Endpoint 2: Translated Pokemon Description
 	serveMux.HandleFunc(
 		fmt.Sprintf("GET /pokemon/translated/{%s}", pokemonNamePathWildcard),
-		func(w http.ResponseWriter, r *http.Request) {
-			pokemonName := r.PathValue(pokemonNamePathWildcard)
-
-			p, _ := pokeAPIClient.PokemonByName(pokemonName)
-			translatorType := funtranslations.TranslatorShakespeare
-			if p.IsLegendary || p.Habitat == "cave" {
-				translatorType = funtranslations.TranslatorYoda
-			}
-			t, _ := funtranslationsClient.FunTranslate(translatorType, p.Description)
-			p.Description = t
-			w.Header().Add("Content-Type", "application/json")
-			respBody, _ := json.Marshal(p)
-			w.Write(respBody)
-		},
+		buildTranslatedPokemonDescriptionHandler(pokeAPIClient, funtranslationsClient),
 	)
 
 	return serveMux
@@ -68,6 +55,23 @@ func buildBasicPokemonInfoHandler(pokeAPIClient pokeapi.Client) func(w http.Resp
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		w.Write(respBody)
+	}
+}
+
+func buildTranslatedPokemonDescriptionHandler(pokeAPIClient pokeapi.Client, funtranslationsClient funtranslations.Client) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		pokemonName := r.PathValue(pokemonNamePathWildcard)
+
+		p, _ := pokeAPIClient.PokemonByName(pokemonName)
+		translatorType := funtranslations.TranslatorShakespeare
+		if p.IsLegendary || p.Habitat == "cave" {
+			translatorType = funtranslations.TranslatorYoda
+		}
+		t, _ := funtranslationsClient.FunTranslate(translatorType, p.Description)
+		p.Description = t
+		w.Header().Add("Content-Type", "application/json")
+		respBody, _ := json.Marshal(p)
 		w.Write(respBody)
 	}
 }
