@@ -165,6 +165,32 @@ func TestTranslatedPokemonInfo(t *testing.T) {
 			}`,
 			expectedStatusCode: http.StatusOK,
 		},
+		"should respond with a yoda translation for a legendary pokemon": {
+			mockPokeAPIClient: &mockPokeAPIClient{
+				mockResp: &types.Pokemon{
+					Name:        "iamlegend",
+					Habitat:     "somehabitat",
+					Description: "this is a legendary pokemon",
+					IsLegendary: true,
+				},
+				mockErr: nil,
+			},
+			mockFunTranslationsClient: &mockFunTranslationsClient{
+				mockResp: "a legendary pokemon, this is",
+				mockErr:  nil,
+			},
+			pokemonName: "iamlegend",
+
+			expectedTranslatorType: funtranslations.TranslatorYoda,
+			expectedText:           "this is a legendary pokemon",
+			expectedResp: `{
+				"name": "iamlegend",
+				"description": "a legendary pokemon, this is",
+				"habitat": "somehabitat",
+				"isLegendary": true
+			}`,
+			expectedStatusCode: http.StatusOK,
+		},
 	}
 
 	for name, tt := range testCases {

@@ -28,17 +28,14 @@ func New(
 	serveMux.HandleFunc(
 		fmt.Sprintf("GET /pokemon/translated/{%s}", pokemonNamePathWildcard),
 		func(w http.ResponseWriter, r *http.Request) {
-			pokeAPIClient.PokemonByName("somecavepokemon")
-			funtranslationsClient.FunTranslate(
-				funtranslations.TranslatorYoda, "this is some cave pokemon",
+			p, _ := pokeAPIClient.PokemonByName("somecavepokemon")
+			t, _ := funtranslationsClient.FunTranslate(
+				funtranslations.TranslatorYoda, p.Description,
 			)
+			p.Description = t
 			w.Header().Add("Content-Type", "application/json")
-			w.Write([]byte(`{
-				"name": "somecavepokemon",
-				"description": "some cave pokemon, this is",
-				"habitat": "cave",
-				"isLegendary": false
-			}`))
+			respBody, _ := json.Marshal(p)
+			w.Write(respBody)
 		},
 	)
 
