@@ -15,11 +15,13 @@ import (
 )
 
 type mockPokeAPIClient struct {
-	mockResp *types.Pokemon
-	mockErr  error
+	mockResp  *types.Pokemon
+	mockErr   error
+	foundName string
 }
 
 func (mpc *mockPokeAPIClient) PokemonByName(name string) (*types.Pokemon, error) {
+	mpc.foundName = name
 	return mpc.mockResp, mpc.mockErr
 }
 
@@ -87,6 +89,10 @@ func TestBasicPokemonInfo(t *testing.T) {
 
 			respRecorder := httptest.NewRecorder()
 			handler.ServeHTTP(respRecorder, req)
+
+			if foundName := tt.mockPokeAPIClient.foundName; foundName != tt.pokemonName {
+				t.Errorf("found pokemonName=%s; want %s", foundName, tt.pokemonName)
+			}
 
 			if tt.expectedStatusCode != respRecorder.Code {
 				t.Errorf("found statusCode=%d; want %d", respRecorder.Code, tt.expectedStatusCode)
@@ -233,6 +239,10 @@ func TestTranslatedPokemonInfo(t *testing.T) {
 
 			respRecorder := httptest.NewRecorder()
 			handler.ServeHTTP(respRecorder, req)
+
+			if foundName := tt.mockPokeAPIClient.foundName; foundName != tt.pokemonName {
+				t.Errorf("found pokemonName=%s; want %s", foundName, tt.pokemonName)
+			}
 
 			foundTranslator := tt.mockFunTranslationsClient.foundTranslatorType
 			if foundTranslator != tt.expectedTranslatorType {

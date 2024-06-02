@@ -28,7 +28,9 @@ func New(
 	serveMux.HandleFunc(
 		fmt.Sprintf("GET /pokemon/translated/{%s}", pokemonNamePathWildcard),
 		func(w http.ResponseWriter, r *http.Request) {
-			p, _ := pokeAPIClient.PokemonByName("somecavepokemon")
+			pokemonName := r.PathValue(pokemonNamePathWildcard)
+
+			p, _ := pokeAPIClient.PokemonByName(pokemonName)
 			translatorType := funtranslations.TranslatorShakespeare
 			if p.IsLegendary || p.Habitat == "cave" {
 				translatorType = funtranslations.TranslatorYoda
