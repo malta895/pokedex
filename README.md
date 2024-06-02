@@ -287,6 +287,8 @@ Besides the request logging provided by the API Gateway, the service can be inst
 
 This project uses the standard Go logging package, which has limited features. In a production environment, a more advanced logging library can be used, such as Logrus, which allows to log to different outputs, and to format the logs in different ways.
 
+Better error handling can be implemented, to log the errors in a structured way, and to include more information in the logs, such as the request ID, the user ID, and the error message returned by the external APIs.
+
 For monitoring, a monitoring system can be used, such as Prometheus, which can scrape metrics from the service, and Grafana, which can visualize the metrics in dashboards. This allows to keep track of the performance of the service, and to detect issues before they become critical.
 
 Alerts can be setup in the monitoring system, to notify maintainers when the service is not performing as expected, or when it is down.
