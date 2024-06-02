@@ -290,8 +290,9 @@ This offers several advantages, such as:
 
 In a production environment, caching can be used to reduce the load on the backend service, and to improve the response time for the clients. Caching can be implemented at different levels:
 
+- API Gateway caching: as already mentioned, the API Gateway can cache the responses of the service, to avoid recomputing them for each request. This is the simplest form of caching, but it is limited by the features offered by the API Gateway.
 - In-memory caching: the responses of the service can be cached in memory, to avoid recomputing them for each request. Several libraries offer this feature. In memory caching is fast, but it is limited by the amount of memory available on the machine, and the cache is lost when the service is restarted. However, given the stateless nature of the service, this is not a big issue, unless the number of users significantly increases.
-- Caching on a in-memory database: the responses can be cached in a in-memory database, such as Redis, to share the cache between multiple instances of the service. This fixes the issues of in-memory caching, also allowing for a greater amount of data to be cached, but it introduces a bit of latency, since Redis has to be reached over the network.
+- Caching on a in-memory database: the responses can be cached in a in-memory database, such as Redis, to share the cache between multiple instances of the service. This fixes the issues of in-memory caching, also allowing for a greater amount of data to be cached, but it introduces a bit of latency, since the external database has to be reached over the network. It also introduces more complexity, since the cache has to be managed, and it requires more resources.
 - Caching on a distributed cache: the responses can be cached in a distributed cache, such as Memcached or Hazelcast, to share the cache between multiple instances of the service, and to scale the cache horizontally. This is the most scalable solution, but it introduces more complexity, and it requires more resources.
 
 ### Logging and Monitoring
