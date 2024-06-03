@@ -22,6 +22,7 @@ A simple web API interface to retrieve information about your Pokemons!
     - [Caching](#caching)
     - [Logging and Monitoring](#logging-and-monitoring)
     - [Authentication and Authorization](#authentication-and-authorization)
+    - [CI/CD Setup](#cicd-setup)
 
 
 ## How to run the project
@@ -314,3 +315,11 @@ If the project requirements include the need for authentication and authorizatio
 For authentication, the service can leverage the OAuth2 standard, which allows clients to authenticate with the service using access tokens. The service can be configured to accept only requests with a valid access token, and to reject requests without a token.
 
 For authorization, the service can use role-based access control, to restrict the access to certain endpoints to certain users. The service can be configured to allow only users with a certain role to access certain endpoints, and to reject users without the required role.
+
+### CI/CD Setup
+
+At the moment the project only has workflows to ensure the correct build and tests of the project, including integration tests. The workflows are implemented on GitHub Actions.
+A complete CI/CD setup could also take care of automating steps such as pushing the Docker image to a registry, to make it available for deployment.
+The CI/CD pipeline could also take charge of deploying the service to testing or production environments.
+
+Other optional steps, such as pushing binaries to the Release section of the repository, or writing changelog on the Release page, could also be automated.
