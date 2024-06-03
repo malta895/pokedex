@@ -82,7 +82,7 @@ This command will expose the HTTP server built within the project on your local 
 
 You can reach it at the address:
 ```
-http://localhost:3000
+http://localhost:8080
 ```
 
 You can now contact the exposed APIs; follow the instructions at the [Usage section](#usage).
